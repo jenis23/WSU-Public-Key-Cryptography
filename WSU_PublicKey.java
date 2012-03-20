@@ -21,7 +21,21 @@ import java.util.Random;
 public class WSU_PublicKey {
 	private final static int blockSize = 32;
 	private final static int certainty = 40;
+	final static String FILE_NAME = "plaintext.txt";
+	final static String PUB_KEY_FILE = "pubkey.txt";
+	final static String PRI_KEY_FILE = "prikey.txt";
+	final static String CIPHER_TEXT_FILE = "ctext.txt";
+	final static String DECIPHER_TEXT_FILE = "dtext.txt";
 
+	/**
+	 * Encryption
+	 * 
+	 * @param PLAIN_TEXT
+	 * @param g
+	 * @param p
+	 * @param e2
+	 * @return C1 and C2
+	 */
 	private static BigInteger[] wsu_Encryption(String PLAIN_TEXT, BigInteger g,
 			BigInteger p, BigInteger e2) {
 		System.out.println("**********************");
@@ -65,6 +79,15 @@ public class WSU_PublicKey {
 		return CipherText;
 	}
 
+	/**
+	 * Decryption
+	 * 
+	 * @param C1
+	 * @param C2
+	 * @param p
+	 * @param d
+	 * @return Ascii text
+	 */
 	private static String wsu_Decryption(BigInteger C1, BigInteger C2,
 			BigInteger p, BigInteger d) {
 		System.out.println("########################");
@@ -163,6 +186,11 @@ public class WSU_PublicKey {
 		return randomNumber;
 	}
 
+	/**
+	 * Key Gen Setup
+	 * 
+	 * @return g,p,d,e2
+	 */
 	private static BigInteger[] setUpKeyGen() {
 
 		BigInteger g = new BigInteger("2");
@@ -176,8 +204,8 @@ public class WSU_PublicKey {
 		keyElements[2] = d;
 		keyElements[3] = e2;
 
-		File pubFile = new File("pubkey.txt");
-		File priFile = new File("prikey.txt");
+		File pubFile = new File(PUB_KEY_FILE);
+		File priFile = new File(PRI_KEY_FILE);
 
 		try {
 			if (!pubFile.exists())
@@ -215,6 +243,12 @@ public class WSU_PublicKey {
 
 	}
 
+	/**
+	 * Reads the plaintext.txt file
+	 * 
+	 * @param fileName
+	 * @return
+	 */
 	public static String[] READ_FILES(String fileName) {
 		String s[] = null;
 		try {
@@ -241,6 +275,12 @@ public class WSU_PublicKey {
 
 	}
 
+	/**
+	 * Converts Ascii to Binary
+	 * 
+	 * @param asciiString
+	 * @return Binary String
+	 */
 	public static String AsciiToBinary(String asciiString) {
 
 		byte[] bytes = asciiString.getBytes();
@@ -261,21 +301,48 @@ public class WSU_PublicKey {
 		System.out.println("**************************");
 		System.out.println("Main Method ");
 		System.out.println("**************************");
-		String files[] = READ_FILES("plaintext.txt");
+		String files[] = READ_FILES(FILE_NAME);
 		String PLAIN_TEXT_FILE = files[0];
 		if (PLAIN_TEXT_FILE.length() != 0) {
 			String PLAIN_TEXT[] = PLAIN_TEXT_FILE.split("(?<=\\G.{4})");
 			BigInteger CIPHER_TEXT[] = null;
 			String recoveredMessage = new String();
 
-			for (int i = 0; i < PLAIN_TEXT.length; i++) {
-				CIPHER_TEXT = wsu_Encryption(PLAIN_TEXT[i], keyElements[0],
-						keyElements[1], keyElements[3]);
-				recoveredMessage = recoveredMessage.concat(wsu_Decryption(
-						CIPHER_TEXT[0], CIPHER_TEXT[1], keyElements[1],
-						keyElements[2]));
-			}
+			File cipherFile = new File(CIPHER_TEXT_FILE);
+			File decipherFile = new File(DECIPHER_TEXT_FILE);
 
+			try {
+				if (!cipherFile.exists())
+					cipherFile.createNewFile();
+
+				if (!decipherFile.exists())
+					decipherFile.createNewFile();
+
+				FileWriter cipherTextFile = new FileWriter(cipherFile.getName());
+				FileWriter decipherTextFile = new FileWriter(
+						decipherFile.getName());
+
+				BufferedWriter cipherContents = new BufferedWriter(
+						cipherTextFile);
+				BufferedWriter decipherContents = new BufferedWriter(
+						decipherTextFile);
+
+				for (int i = 0; i < PLAIN_TEXT.length; i++) {
+					CIPHER_TEXT = wsu_Encryption(PLAIN_TEXT[i], keyElements[0],
+							keyElements[1], keyElements[3]);
+					cipherContents.write(CIPHER_TEXT[1].toString() + " "
+							+ CIPHER_TEXT[0].toString()+" ");
+					recoveredMessage = recoveredMessage.concat(wsu_Decryption(
+							CIPHER_TEXT[0], CIPHER_TEXT[1], keyElements[1],
+							keyElements[2]));
+				}
+				decipherContents.write(recoveredMessage);
+
+				cipherContents.close();
+				decipherContents.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			System.out.println("*******************************************");
 			System.out.println("Final Recovered Message:" + recoveredMessage);
 			System.out.println("*******************************************");
