@@ -21,11 +21,14 @@ import java.util.Random;
 public class WSU_PublicKey {
 	private final static int blockSize = 32;
 	private final static int certainty = 40;
+<<<<<<< HEAD
 	final static String FILE_NAME = "plaintext.txt";
 	final static String PUB_KEY_FILE = "pubkey.txt";
 	final static String PRI_KEY_FILE = "prikey.txt";
 	final static String CIPHER_TEXT_FILE = "ctext.txt";
 	final static String DECIPHER_TEXT_FILE = "dtext.txt";
+=======
+>>>>>>> bc20700ebdecd3c1ffb271f4392e97c35a50199f
 
 	/**
 	 * Encryption
@@ -79,6 +82,7 @@ public class WSU_PublicKey {
 		return CipherText;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Decryption
 	 * 
@@ -88,6 +92,8 @@ public class WSU_PublicKey {
 	 * @param d
 	 * @return Ascii text
 	 */
+=======
+>>>>>>> bc20700ebdecd3c1ffb271f4392e97c35a50199f
 	private static String wsu_Decryption(BigInteger C1, BigInteger C2,
 			BigInteger p, BigInteger d) {
 		System.out.println("########################");
@@ -301,13 +307,18 @@ public class WSU_PublicKey {
 		System.out.println("**************************");
 		System.out.println("Main Method ");
 		System.out.println("**************************");
+<<<<<<< HEAD
 		String files[] = READ_FILES(FILE_NAME);
+=======
+		String files[] = READ_FILES("plaintext.txt");
+>>>>>>> bc20700ebdecd3c1ffb271f4392e97c35a50199f
 		String PLAIN_TEXT_FILE = files[0];
 		if (PLAIN_TEXT_FILE.length() != 0) {
 			String PLAIN_TEXT[] = PLAIN_TEXT_FILE.split("(?<=\\G.{4})");
 			BigInteger CIPHER_TEXT[] = null;
 			String recoveredMessage = new String();
 
+<<<<<<< HEAD
 			File cipherFile = new File(CIPHER_TEXT_FILE);
 			File decipherFile = new File(DECIPHER_TEXT_FILE);
 
@@ -343,6 +354,16 @@ public class WSU_PublicKey {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+=======
+			for (int i = 0; i < PLAIN_TEXT.length; i++) {
+				CIPHER_TEXT = wsu_Encryption(PLAIN_TEXT[i], keyElements[0],
+						keyElements[1], keyElements[3]);
+				recoveredMessage = recoveredMessage.concat(wsu_Decryption(
+						CIPHER_TEXT[0], CIPHER_TEXT[1], keyElements[1],
+						keyElements[2]));
+			}
+
+>>>>>>> bc20700ebdecd3c1ffb271f4392e97c35a50199f
 			System.out.println("*******************************************");
 			System.out.println("Final Recovered Message:" + recoveredMessage);
 			System.out.println("*******************************************");
