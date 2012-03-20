@@ -1,5 +1,9 @@
 /**
  * @author Jenis Modi
+ * Instructions:
+ * @Package name : wsu.cs527.project2
+ * Keep prikey.txt and pubkey.txt in project folder
+ * 
  */
 package wsu.cs527.project2;
 
@@ -16,13 +20,7 @@ import java.util.Random;
 
 public class WSU_PublicKey {
 	private final static int blockSize = 32;
-	private final static int certainty = 20;
-
-	private static void random_Integer() {
-		Random randomNo = new Random(20);
-		int rndno = Math.abs(randomNo.nextInt());
-		System.out.println(rndno);
-	}
+	private final static int certainty = 40;
 
 	private static BigInteger[] wsu_Encryption(String PLAIN_TEXT, BigInteger g,
 			BigInteger p, BigInteger e2) {
@@ -30,19 +28,18 @@ public class WSU_PublicKey {
 		System.out.println("WSU_ENCRYPTION");
 		System.out.println("**********************");
 		String binaryPlnTxt = AsciiToBinary(PLAIN_TEXT);
-		System.out.println("Binary PlainText:" + binaryPlnTxt);
-		System.out.println("Binary PlainText Length:" + binaryPlnTxt.length());
-		for(int i=0;i<32;i++){
-			if(binaryPlnTxt.length()!=32){
-				binaryPlnTxt = binaryPlnTxt.concat("0");	
-			}	
+
+		for (int i = 0; i < blockSize; i++) {
+			if (binaryPlnTxt.length() != blockSize) {
+				binaryPlnTxt = binaryPlnTxt.concat("0");
+			}
 		}
-		System.out.println("New Binary PlainText:" + binaryPlnTxt);
+		System.out.println("Binary PlainText:" + binaryPlnTxt);
 		/**
 		 * Choose random value k from {0,....,p-1}
 		 */
 		BigInteger k = randomValue(BigInteger.ZERO, p.subtract(BigInteger.ONE));
-		System.out.println(k);
+		System.out.println("Random Value K:" + k);
 		/**
 		 * C1 = g^k mod p
 		 */
@@ -51,13 +48,14 @@ public class WSU_PublicKey {
 		 * C2 = e2^k * messageBlock mod p According to Number Theory, This is
 		 * equivalent to C2 = [(e2^k mod p) * (messageBlock mod p)] mod p
 		 */
-		
-		int decValue = Integer.parseInt(binaryPlnTxt,2);
+
+		int decValue = Integer.parseInt(binaryPlnTxt, 2);
 		String strDecValue = Integer.toString(decValue);
-		System.out.println("Input Decimal Value: "+decValue);
-		
-		BigInteger C2 = ((e2.modPow(k, p)).multiply((new BigInteger(
-				strDecValue)).modPow(BigInteger.ONE, p))).mod(p);
+		System.out.println("Plain text Decimal Value: " + decValue);
+
+		BigInteger C2 = ((e2.modPow(k, p))
+				.multiply((new BigInteger(strDecValue)).modPow(BigInteger.ONE,
+						p))).mod(p);
 		System.out.println("C1:" + C1);
 		System.out.println("C2:" + C2);
 
@@ -67,7 +65,7 @@ public class WSU_PublicKey {
 		return CipherText;
 	}
 
-	private static void wsu_Decryption(BigInteger C1, BigInteger C2,
+	private static String wsu_Decryption(BigInteger C1, BigInteger C2,
 			BigInteger p, BigInteger d) {
 		System.out.println("########################");
 		System.out.println("WSU Decryption");
@@ -81,15 +79,32 @@ public class WSU_PublicKey {
 		BigInteger plainText = ((C1.modPow(p1d, p)).multiply((C2.modPow(
 				BigInteger.ONE, p)))).mod(p);
 		Long Plain_Text = plainText.longValue();
-		
+
 		String binPlainText = Long.toBinaryString(Plain_Text);
-		if(binPlainText.length()!=32){
+		if (binPlainText.length() != blockSize) {
 			binPlainText = "0".concat(binPlainText);
 		}
-		
-		System.out.println("Plain text:"+Plain_Text);
-		System.out.println("Binary Plain text:"+binPlainText);
-		System.out.println("Binary text length:"+binPlainText.length());
+		/**
+		 * Converting Binary to Ascii
+		 */
+		String[] Dec_Ascii_Value = new String[4];
+		Dec_Ascii_Value[0] = Character.toString((char) Integer.parseInt(
+				binPlainText.substring(0, 8), 2));
+		Dec_Ascii_Value[1] = Character.toString((char) Integer.parseInt(
+				binPlainText.substring(8, 16), 2));
+		Dec_Ascii_Value[2] = Character.toString((char) Integer.parseInt(
+				binPlainText.substring(16, 24), 2));
+		Dec_Ascii_Value[3] = Character.toString((char) Integer.parseInt(
+				binPlainText.substring(24, 32), 2));
+		String AsciiText = Dec_Ascii_Value[0].concat(Dec_Ascii_Value[1])
+				.concat(Dec_Ascii_Value[2]).concat(Dec_Ascii_Value[3]);
+
+		System.out.println("Ascii Text:" + AsciiText);
+		System.out.println("Deciphered Value in Decimal:" + Plain_Text);
+		System.out.println("Deciphered Value in Binary:" + binPlainText);
+
+		return AsciiText;
+
 	}
 
 	/**
@@ -106,7 +121,7 @@ public class WSU_PublicKey {
 		do {
 			Random random = new Random();
 			do {
-				randomNo = new BigInteger(32, random);
+				randomNo = new BigInteger(blockSize, random);
 			} while (!(randomNo.isProbablePrime(certainty) && (randomNo
 					.mod(modNumber).equals(modEqual))));
 
@@ -114,10 +129,16 @@ public class WSU_PublicKey {
 					.add(new BigInteger("1"));
 		} while (!(primeNumber.isProbablePrime(certainty) && primeNumber
 				.bitLength() > blockSize));
-		System.out.println("RandomNo:" + randomNo);
 		return primeNumber;
 	}
 
+	/**
+	 * To get the random value in between lowLimit and HighLimit of BigIntegers
+	 * 
+	 * @param lowLimit
+	 * @param highLimit
+	 * @return
+	 */
 	public static BigInteger randomValue(BigInteger lowLimit,
 			BigInteger highLimit) {
 		Random randomNo = new Random();
@@ -179,12 +200,12 @@ public class WSU_PublicKey {
 			priContents.close();
 
 			System.out.println("**************************");
-			System.out.println("G's Value:" + g);
-			System.out.println("P's Value:" + p);
-			System.out.println("Is P prime? :" + p.isProbablePrime(certainty));
-			System.out.println("P's Length:" + p.bitLength());
-			System.out.println("d' Value:" + d);
-			System.out.println("e2's Value:" + e2);
+			System.out.println("Setup and Key Generation");
+			System.out.println("**************************");
+			System.out.println("Generator g:" + g);
+			System.out.println("p:" + p);
+			System.out.println("d:" + d);
+			System.out.println("e2:" + e2);
 			System.out.println("**************************");
 
 		} catch (IOException e) {
@@ -213,7 +234,7 @@ public class WSU_PublicKey {
 
 			in1.close();
 
-		} catch (Exception e) {// Catch exception if any
+		} catch (Exception e) {
 			System.err.println("Error: " + e);
 		}
 		return s;
@@ -237,25 +258,30 @@ public class WSU_PublicKey {
 
 	public static void main(String args[]) {
 		BigInteger keyElements[] = setUpKeyGen();
-		System.out.println("$$$$$$$$$$$$$$$$$$$");
+		System.out.println("**************************");
 		System.out.println("Main Method ");
-		System.out.println("$$$$$$$$$$$$$$$$$$$");
+		System.out.println("**************************");
 		String files[] = READ_FILES("plaintext.txt");
 		String PLAIN_TEXT_FILE = files[0];
-		System.out.println("PLN TXT LENGTH:"+PLAIN_TEXT_FILE.length());
-		String PLAIN_TEXT[] = PLAIN_TEXT_FILE.split("(?<=\\G.{4})");
-		BigInteger CIPHER_TEXT[] = null;
-		System.out.println("Length:" + PLAIN_TEXT.length);
-		
-		for (int i = 0; i < PLAIN_TEXT.length; i++) {
-			System.out.println("Plain Text:"+PLAIN_TEXT[i]);
-			CIPHER_TEXT = wsu_Encryption(PLAIN_TEXT[i], keyElements[0],
-					keyElements[1], keyElements[3]);			
-			wsu_Decryption(CIPHER_TEXT[0], CIPHER_TEXT[1], keyElements[1],
-					keyElements[2]);
-		}		
+		if (PLAIN_TEXT_FILE.length() != 0) {
+			String PLAIN_TEXT[] = PLAIN_TEXT_FILE.split("(?<=\\G.{4})");
+			BigInteger CIPHER_TEXT[] = null;
+			String recoveredMessage = new String();
 
-		
+			for (int i = 0; i < PLAIN_TEXT.length; i++) {
+				CIPHER_TEXT = wsu_Encryption(PLAIN_TEXT[i], keyElements[0],
+						keyElements[1], keyElements[3]);
+				recoveredMessage = recoveredMessage.concat(wsu_Decryption(
+						CIPHER_TEXT[0], CIPHER_TEXT[1], keyElements[1],
+						keyElements[2]));
+			}
+
+			System.out.println("*******************************************");
+			System.out.println("Final Recovered Message:" + recoveredMessage);
+			System.out.println("*******************************************");
+		} else {
+			System.out.println("No Message added in Text file");
+		}
 
 	}
 }
